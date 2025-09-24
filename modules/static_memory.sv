@@ -4,7 +4,6 @@ module static_memory #(
     parameter NUM_CLAUSES_PER_CYCLE = 16,
     parameter NUM_VARS_PER_CLAUSE = 3
 ) (
-    input  wire [VAR_ID_BITS-1: 0] symbolic_var_id, // which clause IDs we are trying to look up
     input  wire clk, // clk - used forwhich "slice" of memory we are currently looking at
     output wire [((VAR_ID_BITS + 1)*NUM_VARS_PER_CLAUSE)*NUM_CLAUSES_PER_CYCLE-1:0] output_memory_slice
 );

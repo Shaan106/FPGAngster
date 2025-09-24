@@ -4,8 +4,6 @@ module static_memory_tb;
     parameter VAR_ID_BITS = 8;
     parameter NUM_CLAUSES_PER_CYCLE = 16;
     parameter NUM_VARS_PER_CLAUSE = 3;
-
-    reg [VAR_ID_BITS-1:0] symbolic_var_id;
     reg clk;
     wire [((VAR_ID_BITS + 1)*NUM_VARS_PER_CLAUSE)*NUM_CLAUSES_PER_CYCLE-1:0] output_memory_slice;
 
@@ -15,7 +13,6 @@ module static_memory_tb;
         .NUM_CLAUSES_PER_CYCLE(NUM_CLAUSES_PER_CYCLE),
         .NUM_VARS_PER_CLAUSE(NUM_VARS_PER_CLAUSE)
     ) dut (
-        .symbolic_var_id(symbolic_var_id),
         .clk(clk),
         .output_memory_slice(output_memory_slice)
     );
@@ -28,7 +25,6 @@ module static_memory_tb;
 
     // Test
     initial begin
-        symbolic_var_id = 0;
 
         // Wait for initialization
         #1;
