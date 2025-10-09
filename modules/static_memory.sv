@@ -2,9 +2,10 @@ module static_memory #(
     parameter NUM_CLAUSES = 64,
     parameter VAR_ID_BITS = 8,
     parameter NUM_CLAUSES_PER_CYCLE = 16,
-    parameter NUM_VARS_PER_CLAUSE = 3
+    parameter NUM_VARS_PER_CLAUSE = 3,
+    parameter PTR_BITS = $clog2(NUM_CLAUSES / NUM_CLAUSES_PER_CYCLE)
 ) (
-    input  wire clk, // clk - used forwhich "slice" of memory we are currently looking at
+    input  wire [PTR_BITS-1:0] row_ptr,
     output wire [((VAR_ID_BITS + 1)*NUM_VARS_PER_CLAUSE)*NUM_CLAUSES_PER_CYCLE-1:0] output_memory_slice
 );
 
@@ -20,21 +21,11 @@ module static_memory #(
 
     reg [ROW_WIDTH-1:0] memory [NUM_ROWS-1:0];
 
-    // pointer to current row in memory
-    localparam PTR_BITS = $clog2(NUM_ROWS);
-    reg [PTR_BITS-1:0] row_ptr;
-
-    always @(posedge clk) begin
-        row_ptr <= row_ptr + 1;
-    end
-
     // output current memory slice
     assign output_memory_slice = memory[row_ptr];
 
     // initialize memory with data
     initial begin
-        // Initialize row pointer
-        row_ptr = 0;
 
         // Initialize memory array - add your data here
         // Format: memory[row] = {clause15, clause14, ..., clause1, clause0};
