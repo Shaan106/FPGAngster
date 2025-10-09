@@ -1,5 +1,5 @@
 module row_ptr_counter #(
-    parameter NUM_ROWS = 4,
+    parameter NUM_ROWS = 1,
     parameter PTR_BITS = $clog2(NUM_ROWS)
 ) (
     input  wire clk,

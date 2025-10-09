@@ -11,6 +11,8 @@ module comparator_tb;
     reg assign_var_val;
     reg [MEMORY_WIDTH-1:0] memory_slice;
     wire [BITMASK_WIDTH-1:0] output_bitmask;
+    integer count;
+    integer i;
 
     comparator #(
         .NUM_CLAUSES(NUM_CLAUSES),
@@ -89,6 +91,41 @@ module comparator_tb;
         $display("Assigning True: expect bitmask[0]=0, bitmask[1]=1, bitmask[2]=0");
         $display("Actual: pos[0]=%b, pos[1]=%b, pos[2]=%b",
                  output_bitmask[0], output_bitmask[1], output_bitmask[2]);
+        $display("");
+
+        // Test case 6: Many occurrences of same variable (like x1 in actual problem)
+        $display("=== Test 6: Variable with many occurrences ===");
+        memory_slice = 0;
+
+        // Put variable 1 in many positions with mixed negations
+        // Position 0: x1 (neg=0)
+        memory_slice[8:0] = {1'b0, 8'd1};
+        // Position 2: ~x1 (neg=1)
+        memory_slice[26:18] = {1'b1, 8'd1};
+        // Position 5: x1 (neg=0)
+        memory_slice[53:45] = {1'b0, 8'd1};
+        // Position 8: ~x1 (neg=1)
+        memory_slice[80:72] = {1'b1, 8'd1};
+        // Position 11: x1 (neg=0)
+        memory_slice[107:99] = {1'b0, 8'd1};
+
+        assign_var_id = 1;
+        assign_var_val = 1'b0;  // Assign False to x1
+        #1;
+
+        $display("Variable 1 at positions 0(neg=0), 3(neg=1), 6(neg=0), 9(neg=1), 12(neg=0)");
+        $display("Assigning False to x1: positive x1 (neg=0) should become False");
+        $display("Expected: bits 0, 6, 12 set to 1");
+        $display("Actual bitmask: %b", output_bitmask);
+        $display("pos[0]=%b, pos[3]=%b, pos[6]=%b, pos[9]=%b, pos[12]=%b",
+                 output_bitmask[0], output_bitmask[2], output_bitmask[5],
+                 output_bitmask[8], output_bitmask[11]);
+
+        count = 0;
+        for (i = 0; i < BITMASK_WIDTH; i = i + 1) begin
+            if (output_bitmask[i]) count = count + 1;
+        end
+        $display("Total bits set: %0d (expected: 3)", count);
         $display("");
 
         $display("Testbench completed!");

@@ -29,13 +29,49 @@ module static_memory #(
 
         // Initialize memory array - add your data here
         // Format: memory[row] = {clause15, clause14, ..., clause1, clause0};
-        // Each clause: {var2_id, var2_neg, var1_id, var1_neg, var0_id, var0_neg}
+        // Each clause: {var2_id[7:0], var2_neg, var1_id[7:0], var1_neg, var0_id[7:0], var0_neg}
+        // neg=0 means positive literal, neg=1 means negated literal
+        // Variables are numbered starting from 1 (x1, x2, x3, x4, x5)
 
-        // Example initialization (modify as needed):
-        memory[0] = 0;  // Row 0 data
-        memory[1] = 432'h123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF;  // Row 1 test pattern
-        memory[2] = 432'hFEDCBA0987654321FEDCBA0987654321FEDCBA0987654321FEDCBA0987654321;  // Row 2 test pattern
-        memory[3] = 432'h555555555555555555555555555555555555555555555555555555555555555;  // Row 3 alternating pattern
+        // 16 clause 3-SAT problem from test_case.md
+        // All clauses fit in row 0 (16 clauses per cycle)
+        memory[0] = {
+            // Clause 15: and all x0 | x1 | x2
+            1'b0, 8'd0, 1'b0, 8'd1, 1'b0, 8'd2, 
+            // Clause 14: 
+            1'b0, 8'd0, 1'b0, 8'd1, 1'b0, 8'd2, 
+            // Clause 13:
+            1'b0, 8'd0, 1'b0, 8'd1, 1'b0, 8'd2, 
+            // Clause 12:
+            1'b0, 8'd0, 1'b0, 8'd1, 1'b0, 8'd2, 
+            // Clause 11:
+            1'b0, 8'd0, 1'b0, 8'd1, 1'b0, 8'd2, 
+            // Clause 10:
+            1'b0, 8'd0, 1'b0, 8'd1, 1'b0, 8'd2, 
+            // Clause 9:
+            1'b0, 8'd0, 1'b0, 8'd1, 1'b0, 8'd2, 
+            // Clause 8:
+            1'b0, 8'd0, 1'b0, 8'd1, 1'b0, 8'd2, 
+            // Clause 7:
+            1'b0, 8'd0, 1'b0, 8'd1, 1'b0, 8'd2, 
+            // Clause 6:
+            1'b0, 8'd0, 1'b0, 8'd1, 1'b0, 8'd2, 
+            // Clause 5:
+            1'b0, 8'd0, 1'b0, 8'd1, 1'b0, 8'd2, 
+            // Clause 4:
+            1'b0, 8'd0, 1'b0, 8'd1, 1'b0, 8'd2, 
+            // Clause 3:
+            1'b0, 8'd0, 1'b0, 8'd1, 1'b0, 8'd2, 
+            // Clause 2:
+            1'b0, 8'd0, 1'b0, 8'd1, 1'b0, 8'd2, 
+            // Clause 1:
+            1'b0, 8'd0, 1'b0, 8'd1, 1'b0, 8'd2, 
+            // Clause 0:
+            1'b0, 8'd0, 1'b0, 8'd1, 1'b0, 8'd2  
+            
+        };
+
+
     end
 
 endmodule
