@@ -183,6 +183,7 @@ module sat_node #(
     assign state = state_t'(st);
 
     logic pipeline_valid;
+    logic queue_wait;
 
     always_ff @(posedge clk) begin
         if (rst) begin
@@ -202,6 +203,7 @@ module sat_node #(
             dyn_rst <= 0;
             pq_rst <= 0;
             pipeline_valid <= 0;
+            queue_wait <= 0;
         end else begin
             am_assign <= 0;
             am_pop <= 0;
@@ -226,6 +228,7 @@ module sat_node #(
                         pq_din <= make_lit(h_next_var, 0);
                         st <= ST_PROPAGATE;
                         prop_lit_valid <= 0;
+                        queue_wait <= 1; 
                     end else begin
                         st <= ST_SAT;
                     end
@@ -233,30 +236,27 @@ module sat_node #(
                 
                 ST_PROPAGATE: begin
                     if (!prop_lit_valid) begin
-                        if (pq_empty) begin
+                        if (queue_wait) begin
+                            queue_wait <= 0;
+                        end else if (pq_empty) begin
                             st <= ST_DECIDE;
                         end else begin
                             pq_pop <= 1;
                             current_prop_literal <= pq_dout;
                             prop_lit_valid <= 1;
                             row_ptr <= 0; 
-                            pipeline_valid <= 0; // Use as "Cycle 1" flag
+                            pipeline_valid <= 0;
                         end
                     end else begin
                         if (!pipeline_valid) begin
-                            // Cycle 1: Data is valid at static_row/dyn_rdata.
-                            // Compute match_mask and check for conflict.
                             if (conflict_detected) begin
                                 st <= ST_BACKTRACK;
                                 prop_lit_valid <= 0;
                             end else begin
-                                // Trigger Write for next cycle
                                 dyn_we <= 1;
                                 pipeline_valid <= 1;
                             end
                         end else begin
-                            // Cycle 2: Write is happening. 
-                            // Check for BCP.
                             if (unit_detected) begin
                                 logic [LIT_WIDTH-1:0] forced_L = unit_forced_lit;
                                 logic [LIT_WIDTH-1:0] false_L = negate_lit(forced_L);
@@ -276,7 +276,7 @@ module sat_node #(
                                 prop_lit_valid <= 0;
                             end else begin
                                 row_ptr <= row_ptr + 1;
-                                pipeline_valid <= 0; // Go back to Cycle 1 for next row
+                                pipeline_valid <= 0;
                             end
                         end
                     end
@@ -302,20 +302,17 @@ module sat_node #(
                     am_var <= bt_var;
                     am_val <= ~bt_val; 
                     am_forced <= 1;    
-                    
-                    dyn_rst <= 1; // Pulse reset once
+                    dyn_rst <= 1; 
                     pq_rst <= 1;
-                    
                     rebuild_ptr <= 1;
                     st <= ST_REBUILD_QUEUE;
                 end
                 
                 ST_REBUILD_QUEUE: begin
-                    // Resets are now low by default (at top of always block)
-                    
                     if (rebuild_ptr > NUM_VARS) begin
                         st <= ST_PROPAGATE;
                         prop_lit_valid <= 0;
+                        queue_wait <= 1;
                     end else begin
                         if (am_out_assigned[rebuild_ptr]) begin
                             pq_push <= 1;

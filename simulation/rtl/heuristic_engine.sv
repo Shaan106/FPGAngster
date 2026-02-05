@@ -7,12 +7,14 @@ module heuristic_engine #(
     output logic                         valid
 );
 
-    always_comb begin
+    // Using a simpler loop style that iverilog handles better for priority encoding
+    always @* begin
+        integer i;
         next_var = 0;
         valid = 0;
-        for (integer i = 1; i <= NUM_VARS; i = i + 1) begin
-            if (valid == 1'b0) begin
-                if (assigned[i] == 1'b0) begin
+        for (i = 1; i <= 16; i = i + 1) begin
+            if (i <= NUM_VARS) begin
+                if (assigned[i] == 1'b0 && valid == 1'b0) begin
                     next_var = i[$clog2(NUM_VARS+1)-1:0];
                     valid = 1'b1;
                 end

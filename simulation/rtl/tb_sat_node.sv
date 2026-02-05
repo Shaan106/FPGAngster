@@ -1,11 +1,35 @@
 module tb_sat_node;
 
-    // Parameters
-    localparam NUM_ROWS = 3; // From test case
-    localparam COLS_PER_ROW = 4;
-    localparam NUM_VARS = 3;
-    localparam LIT_WIDTH = 6;
-    localparam INIT_FILE = "rtl/problem.hex"; // In current dir when running simulation
+    // Parameters with defaults, overridable by compiler flags
+    `ifdef NUM_ROWS
+        localparam NUM_ROWS = `NUM_ROWS;
+    `else
+        localparam NUM_ROWS = 32;
+    `endif
+
+    `ifdef COLS_PER_ROW
+        localparam COLS_PER_ROW = `COLS_PER_ROW;
+    `else
+        localparam COLS_PER_ROW = 4;
+    `endif
+
+    `ifdef NUM_VARS
+        localparam NUM_VARS = `NUM_VARS;
+    `else
+        localparam NUM_VARS = 16;
+    `endif
+
+    `ifdef LIT_WIDTH
+        localparam LIT_WIDTH = `LIT_WIDTH;
+    `else
+        localparam LIT_WIDTH = 6;
+    `endif
+
+    `ifdef INIT_FILE
+        localparam string INIT_FILE = `INIT_FILE;
+    `else
+        localparam string INIT_FILE = "problem.hex";
+    `endif
 
     // Signals
     logic clk;
@@ -45,9 +69,10 @@ module tb_sat_node;
 
     // Test Sequence
     initial begin
-        // Dump waves
-        $dumpfile("sat_node.vcd");
-        $dumpvars(0, tb_sat_node);
+        `ifdef VCD_FILE
+            $dumpfile(`VCD_FILE);
+            $dumpvars(0, tb_sat_node);
+        `endif
 
         // Initialize
         rst_n = 0;
@@ -67,25 +92,25 @@ module tb_sat_node;
         wait(done);
         #20;
         
-        $display("Simulation Done at Cycle: %d", cycle_count);
-        $display("Result: %s", result_sat ? "SAT" : "UNSAT");
+        // Structured Output for Parsing
+        $display("RESULT: %s", result_sat ? "SAT" : "UNSAT");
+        $display("CYCLES: %d", cycle_count);
         
         if (result_sat) begin
-            $display("Assignments (v1..v3): %b %b %b", values[1], values[2], values[3]);
+            $write("ASSIGNMENTS: ");
+            for (int i = 1; i <= NUM_VARS; i++) begin
+                $write("%b", values[i]);
+            end
+            $display(""); // Newline
         end
-        
-        if (result_sat === 1'b1) 
-            $display("TEST PASSED");
-        else 
-            $display("TEST FAILED");
             
         $finish;
     end
     
     // Timeout
     initial begin
-        #10000;
-        $display("TIMEOUT");
+        #100000; // Increased timeout
+        $display("RESULT: TIMEOUT");
         $finish;
     end
 
